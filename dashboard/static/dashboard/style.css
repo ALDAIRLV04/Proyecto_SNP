@@ -17,3 +17,15 @@ img {
     margin: 0 auto;
     border: 2px solid #dcdde1;
 }
+
+table.display {
+    margin-top: 20px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.cards .card {
+    text-align: center;
+    min-width: 120px;
+}

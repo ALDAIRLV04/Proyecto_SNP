@@ -7,6 +7,7 @@ from reportlab.pdfgen import canvas
 import matplotlib.pyplot as plt
 from django.shortcuts import render
 from django.utils.dateparse import parse_date
+from django.db.models import Count
 
 from .models import Muestra
 
@@ -41,9 +42,52 @@ def home(request):
     buffer.close()
     grafico = base64.b64encode(image_png).decode('utf-8')
 
+    # Histograma de niveles de riesgo
+    fig_h, ax_h = plt.subplots()
+    niveles = [m.nivel_riesgo for m in muestras]
+    ax_h.hist(niveles, bins=[-0.5, 0.5, 1.5, 2.5], rwidth=0.8, color='skyblue')
+    ax_h.set_xticks([0, 1, 2])
+    ax_h.set_xlabel('Nivel de riesgo')
+    ax_h.set_ylabel('Cantidad')
+    ax_h.set_title('Distribuci\u00f3n de Riesgos')
+    buffer = BytesIO()
+    fig_h.savefig(buffer, format='png')
+    plt.close(fig_h)
+    hist_png = buffer.getvalue()
+    buffer.close()
+    histograma = base64.b64encode(hist_png).decode('utf-8')
+
+    # Evoluci\u00f3n temporal de riesgos (conteo por fecha)
+    fig_l, ax_l = plt.subplots()
+    fechas = list(muestras.order_by('fecha').values_list('fecha', flat=True).distinct())
+    conteos = [muestras.filter(fecha=f).count() for f in fechas]
+    ax_l.plot(fechas, conteos, marker='o')
+    ax_l.set_xlabel('Fecha')
+    ax_l.set_ylabel('Muestras')
+    ax_l.set_title('Evoluci\u00f3n Temporal')
+    buffer = BytesIO()
+    fig_l.autofmt_xdate()
+    fig_l.savefig(buffer, format='png')
+    plt.close(fig_l)
+    line_png = buffer.getvalue()
+    buffer.close()
+    linea = base64.b64encode(line_png).decode('utf-8')
+
+    # M\u00e9tricas de resumen
+    total = muestras.count()
+    altos = muestras.filter(nivel_riesgo__gte=2).count()
+    porcentaje_altos = (altos / total * 100) if total else 0
+    ultima_muestra = muestras.order_by('-fecha').first()
+    ultima_fecha = ultima_muestra.fecha if ultima_muestra else None
+
     context = {
         'muestras': muestras,
         'grafico': grafico,
+        'histograma': histograma,
+        'linea': linea,
+        'total_muestras': total,
+        'porcentaje_altos': porcentaje_altos,
+        'fecha_ultima_muestra': ultima_fecha,
     }
     return render(request, 'dashboard/home.html', context)
 

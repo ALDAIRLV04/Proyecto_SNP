@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,17 +7,29 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
     <style>
         #map { height: 400px; }
+        .cards { display:flex; justify-content:center; gap:10px; margin:20px 0; }
+        .card { background:#fff; padding:10px 20px; border:1px solid #ccc; border-radius:4px; }
     </style>
 </head>
 <body>
 <h1>Dashboard de Riesgos</h1>
+<div class="cards">
+    <div class="card">Total: {{ total_muestras }}</div>
+    <div class="card">% Alto riesgo: {{ porcentaje_altos|floatformat:2 }}%</div>
+    <div class="card">Última muestra: {{ fecha_ultima_muestra }}</div>
+</div>
 <a href="{% url 'descargar_grafico' %}">
     <button>Descargar gráfico como imagen</button>
 </a>
@@ -30,7 +44,29 @@
 </form>
 
 <img src="data:image/png;base64,{{ grafico }}" alt="grafico"/>
+<img src="data:image/png;base64,{{ histograma }}" alt="histograma"/>
+<img src="data:image/png;base64,{{ linea }}" alt="linea"/>
 <div id="map"></div>
+
+<table id="tabla_muestras" class="display">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Fecha</th>
+            <th>Riesgo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for muestra in muestras %}
+        <tr>
+            <td>{{ muestra.nombre }}</td>
+            <td>{{ muestra.fecha }}</td>
+            <td>{{ muestra.nivel_riesgo }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 <script>
     var map = L.map('map').setView([0, 0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -55,6 +91,15 @@
     });
     map.addLayer(markers);
 
+    // capa de calor
+    var heatData = muestras.map(function(m){ return [m.lat, m.lon, m.riesgo]; });
+    L.heatLayer(heatData, {radius:25}).addTo(map);
+
+    // tabla con DataTables
+    $(document).ready(function(){
+        $('#tabla_muestras').DataTable();
+    });
+    
 </script>
 </body>
 </html>
