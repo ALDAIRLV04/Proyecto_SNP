@@ -1,0 +1,19 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f6fa;
+    color: #2f3640;
+    margin: 20px;
+}
+h1 {
+    text-align: center;
+    color: #273c75;
+}
+#map {
+    height: 500px;
+    margin-top: 20px;
+}
+img {
+    display: block;
+    margin: 0 auto;
+    border: 2px solid #dcdde1;
+}

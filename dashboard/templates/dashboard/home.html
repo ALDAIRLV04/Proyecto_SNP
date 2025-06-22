@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+
+    <style>
+        #map { height: 400px; }
+    </style>
+</head>
+<body>
+<h1>Dashboard de Riesgos</h1>
+<a href="{% url 'descargar_grafico' %}">
+    <button>Descargar gráfico como imagen</button>
+</a>
+
+<a href="{% url 'descargar_pdf' %}"><button>Descargar PDF</button></a>
+
+<form method="get" style="text-align:center;">
+    Desde: <input type="date" name="desde">
+    Hasta: <input type="date" name="hasta">
+    Riesgo mínimo: <input type="number" name="riesgo" min="0" max="2">
+    <button type="submit">Filtrar</button>
+</form>
+
+<img src="data:image/png;base64,{{ grafico }}" alt="grafico"/>
+<div id="map"></div>
+<script>
+    var map = L.map('map').setView([0, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+    }).addTo(map);
+    var muestras = [
+        {% for muestra in muestras %}
+        {
+            nombre: '{{ muestra.nombre }}',
+            lat: {{ muestra.latitud }},
+            lon: {{ muestra.longitud }},
+            riesgo: {{ muestra.nivel_riesgo }}
+        },
+        {% endfor %}
+    ];
+    var markers = L.markerClusterGroup();
+    muestras.forEach(function(m){
+        var color = m.riesgo > 1 ? 'red' : (m.riesgo > 0 ? 'yellow' : 'green');
+        var marker = L.circleMarker([m.lat, m.lon], {color: color});
+        marker.bindPopup(m.nombre + ' - Riesgo: ' + m.riesgo);
+        markers.addLayer(marker);
+    });
+    map.addLayer(markers);
+
+</script>
+</body>
+</html>
