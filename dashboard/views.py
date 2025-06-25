@@ -27,13 +27,24 @@ def home(request):
         muestras = muestras.filter(nivel_riesgo__gte=int(riesgo))
 
     fig, ax = plt.subplots()
-    colores = ['green', 'yellow', 'red']
+    riesgos = {
+        0: {'color': 'green', 'label': 'Bajo'},
+        1: {'color': 'yellow', 'label': 'Medio'},
+        2: {'color': 'red', 'label': 'Alto'},
+    }
+    coords = {0: {'x': [], 'y': []}, 1: {'x': [], 'y': []}, 2: {'x': [], 'y': []}}
     for muestra in muestras:
-        color = colores[min(max(muestra.nivel_riesgo, 0), 2)]
-        ax.scatter(muestra.longitud, muestra.latitud, color=color)
+        nivel = max(0, min(muestra.nivel_riesgo, 2))
+        coords[nivel]['x'].append(muestra.longitud)
+        coords[nivel]['y'].append(muestra.latitud)
+    for nivel, info in riesgos.items():
+        if coords[nivel]['x']:
+            ax.scatter(coords[nivel]['x'], coords[nivel]['y'],
+                       color=info['color'], label=info['label'])
     ax.set_xlabel('Longitud')
     ax.set_ylabel('Latitud')
     ax.set_title('Ubicaciones de muestras')
+    ax.legend(title='Nivel de riesgo')
 
     buffer = BytesIO()
     fig.savefig(buffer, format='png')
@@ -45,11 +56,13 @@ def home(request):
     # Histograma de niveles de riesgo
     fig_h, ax_h = plt.subplots()
     niveles = [m.nivel_riesgo for m in muestras]
-    ax_h.hist(niveles, bins=[-0.5, 0.5, 1.5, 2.5], rwidth=0.8, color='skyblue')
+    ax_h.hist(niveles, bins=[-0.5, 0.5, 1.5, 2.5], rwidth=0.8,
+              color='skyblue', label='Muestras')
     ax_h.set_xticks([0, 1, 2])
     ax_h.set_xlabel('Nivel de riesgo')
     ax_h.set_ylabel('Cantidad')
     ax_h.set_title('Distribuci\u00f3n de Riesgos')
+    ax_h.legend()
     buffer = BytesIO()
     fig_h.savefig(buffer, format='png')
     plt.close(fig_h)
@@ -61,10 +74,11 @@ def home(request):
     fig_l, ax_l = plt.subplots()
     fechas = list(muestras.order_by('fecha').values_list('fecha', flat=True).distinct())
     conteos = [muestras.filter(fecha=f).count() for f in fechas]
-    ax_l.plot(fechas, conteos, marker='o')
+    ax_l.plot(fechas, conteos, marker='o', label='Muestras')
     ax_l.set_xlabel('Fecha')
     ax_l.set_ylabel('Muestras')
     ax_l.set_title('Evoluci\u00f3n Temporal')
+    ax_l.legend()
     buffer = BytesIO()
     fig_l.autofmt_xdate()
     fig_l.savefig(buffer, format='png')

@@ -45,9 +45,18 @@
         <button type="submit">Filtrar</button>
     </form>
 
-    <img src="data:image/png;base64,{{ grafico }}" alt="grafico"/>
-    <img src="data:image/png;base64,{{ histograma }}" alt="histograma"/>
-    <img src="data:image/png;base64,{{ linea }}" alt="linea"/>
+    <figure>
+        <img src="data:image/png;base64,{{ grafico }}" alt="grafico"/>
+        <figcaption>Leyenda: verde = bajo, amarillo = medio, rojo = alto</figcaption>
+    </figure>
+    <figure>
+        <img src="data:image/png;base64,{{ histograma }}" alt="histograma"/>
+        <figcaption>Distribución de niveles de riesgo</figcaption>
+    </figure>
+    <figure>
+        <img src="data:image/png;base64,{{ linea }}" alt="linea"/>
+        <figcaption>Evolución temporal de muestras</figcaption>
+    </figure>
     <div id="map"></div>
 
 <table id="tabla_muestras" class="display">
