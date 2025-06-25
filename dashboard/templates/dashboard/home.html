@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+
     <link rel="stylesheet" href="{% static 'dashboard/style.css' %}">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
@@ -17,36 +22,33 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-    <style>
-        #map { height: 400px; }
-        .cards { display:flex; justify-content:center; gap:10px; margin:20px 0; }
-        .card { background:#fff; padding:10px 20px; border:1px solid #ccc; border-radius:4px; }
-    </style>
+
 </head>
 <body>
-<h1>Dashboard de Riesgos</h1>
-<div class="cards">
-    <div class="card">Total: {{ total_muestras }}</div>
-    <div class="card">% Alto riesgo: {{ porcentaje_altos|floatformat:2 }}%</div>
-    <div class="card">Última muestra: {{ fecha_ultima_muestra }}</div>
-</div>
-<a href="{% url 'descargar_grafico' %}">
-    <button>Descargar gráfico como imagen</button>
-</a>
+<div class="container">
+    <h1>Dashboard de Riesgos</h1>
+    <div class="cards">
+        <div class="card">Total: {{ total_muestras }}</div>
+        <div class="card">% Alto riesgo: {{ porcentaje_altos|floatformat:2 }}%</div>
+        <div class="card">Última muestra: {{ fecha_ultima_muestra }}</div>
+    </div>
 
-<a href="{% url 'descargar_pdf' %}"><button>Descargar PDF</button></a>
+    <div class="actions">
+        <a href="{% url 'descargar_grafico' %}" class="btn">Descargar gráfico</a>
+        <a href="{% url 'descargar_pdf' %}" class="btn">Descargar PDF</a>
+    </div>
 
-<form method="get" style="text-align:center;">
-    Desde: <input type="date" name="desde">
-    Hasta: <input type="date" name="hasta">
-    Riesgo mínimo: <input type="number" name="riesgo" min="0" max="2">
-    <button type="submit">Filtrar</button>
-</form>
+    <form method="get" class="filters">
+        Desde: <input type="date" name="desde">
+        Hasta: <input type="date" name="hasta">
+        Riesgo mínimo: <input type="number" name="riesgo" min="0" max="2">
+        <button type="submit">Filtrar</button>
+    </form>
 
-<img src="data:image/png;base64,{{ grafico }}" alt="grafico"/>
-<img src="data:image/png;base64,{{ histograma }}" alt="histograma"/>
-<img src="data:image/png;base64,{{ linea }}" alt="linea"/>
-<div id="map"></div>
+    <img src="data:image/png;base64,{{ grafico }}" alt="grafico"/>
+    <img src="data:image/png;base64,{{ histograma }}" alt="histograma"/>
+    <img src="data:image/png;base64,{{ linea }}" alt="linea"/>
+    <div id="map"></div>
 
 <table id="tabla_muestras" class="display">
     <thead>
@@ -66,6 +68,8 @@
         {% endfor %}
     </tbody>
 </table>
+
+</div>
 
 <script>
     var map = L.map('map').setView([0, 0], 2);
